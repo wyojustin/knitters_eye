@@ -30,10 +30,12 @@ class _StitchChartState extends State<StitchChart> {
     for (int i = 0; i < widget.rows.length; i++) {
       _rowKeys[i] = GlobalKey();
     }
-    // Scroll to current row after build, with a slight delay to ensure layout is complete
+    // Scroll to current row after build, with a longer delay to ensure layout is complete
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        _scrollToCurrentRow();
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          _scrollToCurrentRow();
+        }
       });
     });
   }
@@ -56,6 +58,7 @@ class _StitchChartState extends State<StitchChart> {
         alignment: 0.3, // Position current row at 30% from top
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
+        alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
       );
     }
   }
