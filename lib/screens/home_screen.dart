@@ -33,8 +33,44 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _createNewProject() async {
-    // Create a sample ribbing pattern with visual stitches
-    final pattern = PatternParser.createSampleRibbingPattern();
+    // Show pattern selection dialog
+    final patternType = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Choose Pattern'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.grid_on),
+              title: const Text('2x2 Ribbing Sample'),
+              subtitle: const Text('8 stitches × 9 rows'),
+              onTap: () => Navigator.pop(context, 'ribbing'),
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.auto_awesome),
+              title: const Text('Diamond Texture'),
+              subtitle: const Text('40 stitches × 20 rows'),
+              onTap: () => Navigator.pop(context, 'diamond'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (patternType == null) return;
+
+    // Create the selected pattern
+    final pattern = patternType == 'diamond'
+        ? PatternParser.create20x40DiamondPattern()
+        : PatternParser.createSampleRibbingPattern();
 
     final project = Project(
       id: const Uuid().v4(),
@@ -45,13 +81,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
     await _storage.saveProject(project);
     await _loadProjects();
-    
+
     // Show a message
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Created new project with visual stitch chart!'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text('Created "${pattern.name}" project!'),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
