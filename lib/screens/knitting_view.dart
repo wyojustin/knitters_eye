@@ -62,69 +62,75 @@ class _KnittingViewState extends State<KnittingView> {
         return KeyEventResult.ignored;
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(_project.pattern.name),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.info_outline),
-              onPressed: () {
-                // Show pattern details
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text(_project.pattern.name),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Total Rows: ${_project.pattern.totalRows}'),
-                        Text('Format: ${_project.pattern.format.name}'),
-                        if (_project.pattern.designer != null)
-                          Text('Designer: ${_project.pattern.designer}'),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Close'),
+        body: CustomScrollView(
+          slivers: [
+            // Scrollable AppBar
+            SliverAppBar(
+              floating: true,
+              snap: true,
+              title: Text(_project.pattern.name),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.info_outline),
+                  onPressed: () {
+                    // Show pattern details
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text(_project.pattern.name),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Total Rows: ${_project.pattern.totalRows}'),
+                            Text('Format: ${_project.pattern.format.name}'),
+                            if (_project.pattern.designer != null)
+                              Text('Designer: ${_project.pattern.designer}'),
+                          ],
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Close'),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                );
-              },
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
-        body: Column(
-          children: [
-            // Row Counter Section with Prev/Next Row Buttons
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: _project.currentRowIndex > 0 ? _decrementRow : null,
-                    icon: const Icon(Icons.arrow_downward),
-                    label: const Text('Prev Row'),
-                  ),
-                  const SizedBox(width: 16),
-                  RowCounter(
-                    currentRow: _project.currentRowNumber,
-                    totalRows: _project.pattern.totalRows,
-                  ),
-                  const SizedBox(width: 16),
-                  ElevatedButton.icon(
-                    onPressed: _project.currentRowIndex < _project.pattern.totalRows - 1 ? _incrementRow : null,
-                    icon: const Icon(Icons.arrow_upward),
-                    label: const Text('Next Row'),
-                  ),
-                ],
+
+            // Row Counter Section
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: _project.currentRowIndex > 0 ? _decrementRow : null,
+                      icon: const Icon(Icons.arrow_downward),
+                      label: const Text('Prev Row'),
+                    ),
+                    const SizedBox(width: 16),
+                    RowCounter(
+                      currentRow: _project.currentRowNumber,
+                      totalRows: _project.pattern.totalRows,
+                    ),
+                    const SizedBox(width: 16),
+                    ElevatedButton.icon(
+                      onPressed: _project.currentRowIndex < _project.pattern.totalRows - 1 ? _incrementRow : null,
+                      icon: const Icon(Icons.arrow_upward),
+                      label: const Text('Next Row'),
+                    ),
+                  ],
+                ),
               ),
             ),
 
-            // Pattern Display with Stitch Chart
-            Expanded(
+            // Pattern Display
+            SliverFillRemaining(
               child: Card(
                 margin: const EdgeInsets.all(8.0),
                 elevation: 2,
