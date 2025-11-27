@@ -45,6 +45,7 @@ class _StitchChartState extends State<StitchChart> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.currentRowIndex != widget.currentRowIndex) {
       _scrollToCurrentRow();
+      _resetHorizontalScroll();
     }
   }
 
@@ -59,6 +60,17 @@ class _StitchChartState extends State<StitchChart> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
         alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
+      );
+    }
+  }
+
+  void _resetHorizontalScroll() {
+    // Reset horizontal scroll to show first stitch
+    if (_horizontalScrollController.hasClients) {
+      _horizontalScrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
       );
     }
   }
