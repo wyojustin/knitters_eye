@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/pattern_row.dart';
 
 /// Widget that renders a visual stitch-by-stitch chart
-class StitchChart extends StatelessWidget {
+class StitchChart extends StatefulWidget {
   final List<PatternRow> rows;
   final int currentRowIndex;
   final Function(int) onRowTap;
@@ -15,30 +15,79 @@ class StitchChart extends StatelessWidget {
   });
 
   @override
+  State<StitchChart> createState() => _StitchChartState();
+}
+
+class _StitchChartState extends State<StitchChart> {
+  final ScrollController _scrollController = ScrollController();
+  final Map<int, GlobalKey> _rowKeys = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Create keys for each row
+    for (int i = 0; i < widget.rows.length; i++) {
+      _rowKeys[i] = GlobalKey();
+    }
+    // Scroll to current row after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToCurrentRow();
+    });
+  }
+
+  @override
+  void didUpdateWidget(StitchChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentRowIndex != widget.currentRowIndex) {
+      _scrollToCurrentRow();
+    }
+  }
+
+  void _scrollToCurrentRow() {
+    final currentKey = _rowKeys[widget.currentRowIndex];
+    if (currentKey?.currentContext != null) {
+      Scrollable.ensureVisible(
+        currentKey!.currentContext!,
+        alignment: 0.5,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Determine if current row is WS - this affects how ALL rows display
-    final currentRow = rows.isNotEmpty && currentRowIndex >= 0 && currentRowIndex < rows.length
-        ? rows[currentRowIndex]
+    final currentRow = widget.rows.isNotEmpty && widget.currentRowIndex >= 0 && widget.currentRowIndex < widget.rows.length
+        ? widget.rows[widget.currentRowIndex]
         : null;
     final currentIsWS = currentRow?.isWrongSide ?? false;
 
     // Reverse rows to build from bottom to top
-    final reversedRows = rows.reversed.toList();
-    
+    final reversedRows = widget.rows.reversed.toList();
+
     return ListView.builder(
+      controller: _scrollController,
       reverse: false,
       itemCount: reversedRows.length,
       itemBuilder: (context, index) {
         // Calculate the actual row index in the original list
-        final actualIndex = rows.length - 1 - index;
+        final actualIndex = widget.rows.length - 1 - index;
         final row = reversedRows[index];
-        
-        final isCurrentRow = actualIndex == currentRowIndex;
-        final isCompleted = actualIndex < currentRowIndex;
-        final isFuture = actualIndex > currentRowIndex;
+
+        final isCurrentRow = actualIndex == widget.currentRowIndex;
+        final isCompleted = actualIndex < widget.currentRowIndex;
+        final isFuture = actualIndex > widget.currentRowIndex;
 
         return GestureDetector(
-          onTap: () => onRowTap(actualIndex),
+          key: _rowKeys[actualIndex],
+          onTap: () => widget.onRowTap(actualIndex),
           child: _StitchRow(
             row: row,
             isCurrentRow: isCurrentRow,
@@ -142,20 +191,21 @@ class _StitchRow extends StatelessWidget {
 
   Widget _buildStitchGrid(BuildContext context) {
     var stitches = row.chartSymbols!;
-    
+
     // KNITTER'S EYE PERSPECTIVE:
     // When you're on a WS row, you've flipped your work
     // So ALL rows appear reversed from your perspective
     if (currentIsWS) {
       stitches = stitches.reversed.toList();
     }
-    
+
     return Wrap(
       spacing: 4,
       runSpacing: 4,
       children: stitches.map((stitch) => _StitchSymbol(
         symbol: stitch,
         isCurrentRow: isCurrentRow,
+        swapKP: currentIsWS,
       )).toList(),
     );
   }
@@ -164,22 +214,34 @@ class _StitchRow extends StatelessWidget {
 class _StitchSymbol extends StatelessWidget {
   final String symbol;
   final bool isCurrentRow;
+  final bool swapKP;
 
   const _StitchSymbol({
     required this.symbol,
     required this.isCurrentRow,
+    required this.swapKP,
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     // Determine the display character and style
     String displayChar;
     Color? backgroundColor;
     Color? textColor;
-    
-    switch (symbol.toLowerCase()) {
+
+    // When viewing from WS, knits appear as purls and vice versa
+    var displaySymbol = symbol.toLowerCase();
+    if (swapKP) {
+      if (displaySymbol == 'k' || displaySymbol == 'x') {
+        displaySymbol = 'p';
+      } else if (displaySymbol == 'p' || displaySymbol == 'o') {
+        displaySymbol = 'k';
+      }
+    }
+
+    switch (displaySymbol) {
       case 'k':
       case 'x':
         displayChar = '×'; // Knit stitch
