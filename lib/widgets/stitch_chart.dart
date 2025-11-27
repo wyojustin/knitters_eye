@@ -136,7 +136,7 @@ class _StitchRow extends StatelessWidget {
 
     return Container(
       color: backgroundColor,
-      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 8),
       child: Opacity(
         opacity: opacity,
         child: SingleChildScrollView(
@@ -146,12 +146,12 @@ class _StitchRow extends StatelessWidget {
             children: [
               // Row number - always normal
               SizedBox(
-                width: 40,
+                width: 32,
                 child: Text(
                   '${row.rowNumber}',
                   style: TextStyle(
                     fontWeight: isCurrentRow ? FontWeight.bold : FontWeight.normal,
-                    fontSize: isCurrentRow ? 16 : 14,
+                    fontSize: isCurrentRow ? 13 : 11,
                     color: isCurrentRow
                         ? colorScheme.onPrimaryContainer
                         : null,
@@ -159,7 +159,7 @@ class _StitchRow extends StatelessWidget {
                   textAlign: TextAlign.right,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
 
               // Stitch chart
               row.chartSymbols != null && row.chartSymbols!.isNotEmpty
@@ -167,17 +167,17 @@ class _StitchRow extends StatelessWidget {
                   : Text(
                       row.instruction,
                       style: TextStyle(
-                        fontSize: isCurrentRow ? 16 : 14,
+                        fontSize: isCurrentRow ? 12 : 11,
                         fontWeight: isCurrentRow ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
 
               // RS/WS indicator - always normal
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Chip(
                 label: Text(
                   row.isRightSide ? 'RS' : 'WS',
-                  style: const TextStyle(fontSize: 10),
+                  style: const TextStyle(fontSize: 9),
                 ),
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
@@ -200,8 +200,8 @@ class _StitchRow extends StatelessWidget {
     }
 
     return Wrap(
-      spacing: 4,
-      runSpacing: 4,
+      spacing: 2,
+      runSpacing: 2,
       children: stitches.map((stitch) => _StitchSymbol(
         symbol: stitch,
         isCurrentRow: isCurrentRow,
@@ -261,23 +261,23 @@ class _StitchSymbol extends StatelessWidget {
     }
 
     return Container(
-      width: 24,
-      height: 24,
+      width: 16,
+      height: 16,
       decoration: BoxDecoration(
         color: backgroundColor,
         border: Border.all(
-          color: isCurrentRow 
+          color: isCurrentRow
               ? colorScheme.primary.withValues(alpha: 0.5)
               : colorScheme.outline.withValues(alpha: 0.3),
-          width: isCurrentRow ? 1.5 : 0.5,
+          width: isCurrentRow ? 1.0 : 0.5,
         ),
-        borderRadius: BorderRadius.circular(2),
+        borderRadius: BorderRadius.circular(1),
       ),
       child: Center(
         child: Text(
           displayChar,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 11,
             fontWeight: isCurrentRow ? FontWeight.bold : FontWeight.normal,
             color: textColor,
           ),
