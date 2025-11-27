@@ -110,7 +110,7 @@ class _KnittingViewState extends State<KnittingView> {
                   const SizedBox(width: 16),
                   ElevatedButton.icon(
                     onPressed: _incrementRow,
-                    icon: const Icon(Icons.arrow_downward),
+                    icon: const Icon(Icons.arrow_upward),
                     label: const Text('Next Row'),
                   ),
                 ],

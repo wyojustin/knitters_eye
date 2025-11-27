@@ -29,9 +29,11 @@ class _StitchChartState extends State<StitchChart> {
     for (int i = 0; i < widget.rows.length; i++) {
       _rowKeys[i] = GlobalKey();
     }
-    // Scroll to current row after build
+    // Scroll to current row after build, with a slight delay to ensure layout is complete
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToCurrentRow();
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _scrollToCurrentRow();
+      });
     });
   }
 
@@ -48,7 +50,7 @@ class _StitchChartState extends State<StitchChart> {
     if (currentKey?.currentContext != null) {
       Scrollable.ensureVisible(
         currentKey!.currentContext!,
-        alignment: 0.5,
+        alignment: 0.3, // Position current row at 30% from top (lower on screen)
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
@@ -136,7 +138,7 @@ class _StitchRow extends StatelessWidget {
 
     return Container(
       color: backgroundColor,
-      padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 0.5, horizontal: 8),
       child: Opacity(
         opacity: opacity,
         child: SingleChildScrollView(
