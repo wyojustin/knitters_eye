@@ -49,11 +49,11 @@ class _StitchChartState extends State<StitchChart> {
   void _scrollToCurrentRow() {
     final currentKey = _rowKeys[widget.currentRowIndex];
     if (currentKey?.currentContext != null) {
-      // For the first row (row 1, index 0), align to top so it's clearly visible
-      final alignment = widget.currentRowIndex == 0 ? 0.0 : 0.3;
+      // Always position current row at 30% from top for good visibility
+      // This works for first row and all other rows
       Scrollable.ensureVisible(
         currentKey!.currentContext!,
-        alignment: alignment, // Position current row at top for first row, 30% for others
+        alignment: 0.3, // Position current row at 30% from top
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
@@ -78,32 +78,39 @@ class _StitchChartState extends State<StitchChart> {
     // Reverse rows to build from bottom to top
     final reversedRows = widget.rows.reversed.toList();
 
-    return ListView.builder(
-      controller: _scrollController,
-      reverse: false,
-      itemCount: reversedRows.length,
-      itemBuilder: (context, index) {
-        // Calculate the actual row index in the original list
-        final actualIndex = widget.rows.length - 1 - index;
-        final row = reversedRows[index];
+    // Wrap entire ListView in horizontal scroll so all rows move together
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      controller: _horizontalScrollController,
+      child: SizedBox(
+        width: 2000, // Wide enough for large patterns
+        child: ListView.builder(
+          controller: _scrollController,
+          reverse: false,
+          itemCount: reversedRows.length,
+          itemBuilder: (context, index) {
+            // Calculate the actual row index in the original list
+            final actualIndex = widget.rows.length - 1 - index;
+            final row = reversedRows[index];
 
-        final isCurrentRow = actualIndex == widget.currentRowIndex;
-        final isCompleted = actualIndex < widget.currentRowIndex;
-        final isFuture = actualIndex > widget.currentRowIndex;
+            final isCurrentRow = actualIndex == widget.currentRowIndex;
+            final isCompleted = actualIndex < widget.currentRowIndex;
+            final isFuture = actualIndex > widget.currentRowIndex;
 
-        return GestureDetector(
-          key: _rowKeys[actualIndex],
-          onTap: () => widget.onRowTap(actualIndex),
-          child: _StitchRow(
-            row: row,
-            isCurrentRow: isCurrentRow,
-            isCompleted: isCompleted,
-            isFuture: isFuture,
-            currentIsWS: currentIsWS,
-            horizontalScrollController: _horizontalScrollController,
-          ),
-        );
-      },
+            return GestureDetector(
+              key: _rowKeys[actualIndex],
+              onTap: () => widget.onRowTap(actualIndex),
+              child: _StitchRow(
+                row: row,
+                isCurrentRow: isCurrentRow,
+                isCompleted: isCompleted,
+                isFuture: isFuture,
+                currentIsWS: currentIsWS,
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }
@@ -114,7 +121,6 @@ class _StitchRow extends StatelessWidget {
   final bool isCompleted;
   final bool isFuture;
   final bool currentIsWS;
-  final ScrollController horizontalScrollController;
 
   const _StitchRow({
     required this.row,
@@ -122,7 +128,6 @@ class _StitchRow extends StatelessWidget {
     required this.isCompleted,
     required this.isFuture,
     required this.currentIsWS,
-    required this.horizontalScrollController,
   });
 
   @override
@@ -148,52 +153,48 @@ class _StitchRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 0.5, horizontal: 8),
       child: Opacity(
         opacity: opacity,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          controller: horizontalScrollController,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Row number - always normal
-              SizedBox(
-                width: 32,
-                child: Text(
-                  '${row.rowNumber}',
-                  style: TextStyle(
-                    fontWeight: isCurrentRow ? FontWeight.bold : FontWeight.normal,
-                    fontSize: isCurrentRow ? 13 : 11,
-                    color: isCurrentRow
-                        ? colorScheme.onPrimaryContainer
-                        : null,
-                  ),
-                  textAlign: TextAlign.right,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Row number - always normal
+            SizedBox(
+              width: 32,
+              child: Text(
+                '${row.rowNumber}',
+                style: TextStyle(
+                  fontWeight: isCurrentRow ? FontWeight.bold : FontWeight.normal,
+                  fontSize: isCurrentRow ? 13 : 11,
+                  color: isCurrentRow
+                      ? colorScheme.onPrimaryContainer
+                      : null,
                 ),
+                textAlign: TextAlign.right,
               ),
-              const SizedBox(width: 8),
+            ),
+            const SizedBox(width: 8),
 
-              // Stitch chart
-              row.chartSymbols != null && row.chartSymbols!.isNotEmpty
-                  ? _buildStitchGrid(context)
-                  : Text(
-                      row.instruction,
-                      style: TextStyle(
-                        fontSize: isCurrentRow ? 12 : 11,
-                        fontWeight: isCurrentRow ? FontWeight.bold : FontWeight.normal,
-                      ),
+            // Stitch chart
+            row.chartSymbols != null && row.chartSymbols!.isNotEmpty
+                ? _buildStitchGrid(context)
+                : Text(
+                    row.instruction,
+                    style: TextStyle(
+                      fontSize: isCurrentRow ? 12 : 11,
+                      fontWeight: isCurrentRow ? FontWeight.bold : FontWeight.normal,
                     ),
+                  ),
 
-              // RS/WS indicator - always normal
-              const SizedBox(width: 6),
-              Chip(
-                label: Text(
-                  row.isRightSide ? 'RS' : 'WS',
-                  style: const TextStyle(fontSize: 9),
-                ),
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
+            // RS/WS indicator - always normal
+            const SizedBox(width: 6),
+            Chip(
+              label: Text(
+                row.isRightSide ? 'RS' : 'WS',
+                style: const TextStyle(fontSize: 9),
               ),
-            ],
-          ),
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+            ),
+          ],
         ),
       ),
     );
