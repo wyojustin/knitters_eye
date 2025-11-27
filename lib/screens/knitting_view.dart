@@ -3,6 +3,7 @@ import '../models/project.dart';
 import '../services/storage_service.dart';
 import '../widgets/row_counter.dart';
 import '../widgets/stitch_chart.dart';
+import 'package:flutter/services.dart';
 
 class KnittingView extends StatefulWidget {
   final Project project;
@@ -44,7 +45,16 @@ class _KnittingViewState extends State<KnittingView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
+          _incrementRow();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(_project.pattern.name),
         actions: [
@@ -82,7 +92,7 @@ class _KnittingViewState extends State<KnittingView> {
         children: [
           // Row Counter Section
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(2.0),
             child: RowCounter(
               currentRow: _project.currentRowNumber,
               totalRows: _project.pattern.totalRows,

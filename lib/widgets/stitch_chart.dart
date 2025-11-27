@@ -87,12 +87,14 @@ class _StitchRow extends StatelessWidget {
 
     return Container(
       color: backgroundColor,
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
       child: Opacity(
         opacity: opacity,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
             // Row number - always normal
             SizedBox(
               width: 40,
@@ -111,7 +113,6 @@ class _StitchRow extends StatelessWidget {
             const SizedBox(width: 12),
             
             // Stitch chart
-            Expanded(
               child: row.chartSymbols != null && row.chartSymbols!.isNotEmpty
                   ? _buildStitchGrid(context)
                   : Text(
@@ -121,7 +122,6 @@ class _StitchRow extends StatelessWidget {
                         fontWeight: isCurrentRow ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
-            ),
             
             // RS/WS indicator - always normal
             const SizedBox(width: 8),
