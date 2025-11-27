@@ -97,19 +97,25 @@ class _KnittingViewState extends State<KnittingView> {
         ),
         body: Column(
           children: [
-            // Row Counter Section with Next Row Button
+            // Row Counter Section with Prev/Next Row Buttons
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  ElevatedButton.icon(
+                    onPressed: _project.currentRowIndex > 0 ? _decrementRow : null,
+                    icon: const Icon(Icons.arrow_downward),
+                    label: const Text('Prev Row'),
+                  ),
+                  const SizedBox(width: 16),
                   RowCounter(
                     currentRow: _project.currentRowNumber,
                     totalRows: _project.pattern.totalRows,
                   ),
                   const SizedBox(width: 16),
                   ElevatedButton.icon(
-                    onPressed: _incrementRow,
+                    onPressed: _project.currentRowIndex < _project.pattern.totalRows - 1 ? _incrementRow : null,
                     icon: const Icon(Icons.arrow_upward),
                     label: const Text('Next Row'),
                   ),

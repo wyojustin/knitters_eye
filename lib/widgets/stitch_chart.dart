@@ -20,6 +20,7 @@ class StitchChart extends StatefulWidget {
 
 class _StitchChartState extends State<StitchChart> {
   final ScrollController _scrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
   final Map<int, GlobalKey> _rowKeys = {};
 
   @override
@@ -48,9 +49,11 @@ class _StitchChartState extends State<StitchChart> {
   void _scrollToCurrentRow() {
     final currentKey = _rowKeys[widget.currentRowIndex];
     if (currentKey?.currentContext != null) {
+      // For the first row (row 1, index 0), align to top so it's clearly visible
+      final alignment = widget.currentRowIndex == 0 ? 0.0 : 0.3;
       Scrollable.ensureVisible(
         currentKey!.currentContext!,
-        alignment: 0.3, // Position current row at 30% from top (lower on screen)
+        alignment: alignment, // Position current row at top for first row, 30% for others
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
@@ -60,6 +63,7 @@ class _StitchChartState extends State<StitchChart> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _horizontalScrollController.dispose();
     super.dispose();
   }
 
@@ -74,31 +78,38 @@ class _StitchChartState extends State<StitchChart> {
     // Reverse rows to build from bottom to top
     final reversedRows = widget.rows.reversed.toList();
 
-    return ListView.builder(
-      controller: _scrollController,
-      reverse: false,
-      itemCount: reversedRows.length,
-      itemBuilder: (context, index) {
-        // Calculate the actual row index in the original list
-        final actualIndex = widget.rows.length - 1 - index;
-        final row = reversedRows[index];
+    // Wrap in horizontal scroll so all rows scroll together
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      controller: _horizontalScrollController,
+      child: IntrinsicWidth(
+        child: ListView.builder(
+          controller: _scrollController,
+          reverse: false,
+          itemCount: reversedRows.length,
+          itemBuilder: (context, index) {
+            // Calculate the actual row index in the original list
+            final actualIndex = widget.rows.length - 1 - index;
+            final row = reversedRows[index];
 
-        final isCurrentRow = actualIndex == widget.currentRowIndex;
-        final isCompleted = actualIndex < widget.currentRowIndex;
-        final isFuture = actualIndex > widget.currentRowIndex;
+            final isCurrentRow = actualIndex == widget.currentRowIndex;
+            final isCompleted = actualIndex < widget.currentRowIndex;
+            final isFuture = actualIndex > widget.currentRowIndex;
 
-        return GestureDetector(
-          key: _rowKeys[actualIndex],
-          onTap: () => widget.onRowTap(actualIndex),
-          child: _StitchRow(
-            row: row,
-            isCurrentRow: isCurrentRow,
-            isCompleted: isCompleted,
-            isFuture: isFuture,
-            currentIsWS: currentIsWS,
-          ),
-        );
-      },
+            return GestureDetector(
+              key: _rowKeys[actualIndex],
+              onTap: () => widget.onRowTap(actualIndex),
+              child: _StitchRow(
+                row: row,
+                isCurrentRow: isCurrentRow,
+                isCompleted: isCompleted,
+                isFuture: isFuture,
+                currentIsWS: currentIsWS,
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }
@@ -141,11 +152,9 @@ class _StitchRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 0.5, horizontal: 8),
       child: Opacity(
         opacity: opacity,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
               // Row number - always normal
               SizedBox(
                 width: 32,
@@ -185,7 +194,6 @@ class _StitchRow extends StatelessWidget {
                 padding: EdgeInsets.zero,
               ),
             ],
-          ),
         ),
       ),
     );
