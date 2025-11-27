@@ -48,9 +48,16 @@ class _KnittingViewState extends State<KnittingView> {
     return Focus(
       autofocus: true,
       onKeyEvent: (node, event) {
-        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.space) {
-          _incrementRow();
-          return KeyEventResult.handled;
+        if (event is KeyDownEvent) {
+          if (event.logicalKey == LogicalKeyboardKey.space) {
+            _incrementRow();
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowDown ||
+                     event.logicalKey == LogicalKeyboardKey.backspace ||
+                     event.logicalKey == LogicalKeyboardKey.delete) {
+            _decrementRow();
+            return KeyEventResult.handled;
+          }
         }
         return KeyEventResult.ignored;
       },
@@ -90,14 +97,23 @@ class _KnittingViewState extends State<KnittingView> {
         ),
         body: Column(
           children: [
-            // Row Counter Section
+            // Row Counter Section with Next Row Button
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: RowCounter(
-                currentRow: _project.currentRowNumber,
-                totalRows: _project.pattern.totalRows,
-                onIncrement: _incrementRow,
-                onDecrement: _decrementRow,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  RowCounter(
+                    currentRow: _project.currentRowNumber,
+                    totalRows: _project.pattern.totalRows,
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton.icon(
+                    onPressed: _incrementRow,
+                    icon: const Icon(Icons.arrow_downward),
+                    label: const Text('Next Row'),
+                  ),
+                ],
               ),
             ),
 
@@ -114,11 +130,6 @@ class _KnittingViewState extends State<KnittingView> {
               ),
             ),
           ],
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: _incrementRow,
-          label: const Text('Next Row'),
-          icon: const Icon(Icons.arrow_downward),
         ),
       ),
     );
