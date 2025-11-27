@@ -89,6 +89,8 @@ class _StitchChartState extends State<StitchChart> {
         width: 2000, // Wide enough for large patterns
         child: ListView.builder(
           controller: _scrollController,
+          shrinkWrap: true, // Let outer scroll view control the size
+          physics: const NeverScrollableScrollPhysics(), // Disable vertical scrolling here
           reverse: false,
           itemCount: reversedRows.length,
           itemBuilder: (context, index) {
