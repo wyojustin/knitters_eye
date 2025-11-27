@@ -131,13 +131,29 @@ class _KnittingViewState extends State<KnittingView> {
 
             // Pattern Display
             SliverFillRemaining(
-              child: Card(
-                margin: const EdgeInsets.all(8.0),
-                elevation: 2,
-                child: StitchChart(
-                  rows: _project.pattern.rows,
-                  currentRowIndex: _project.currentRowIndex,
-                  onRowTap: _updateRow,
+              child: GestureDetector(
+                onTapUp: (TapUpDetails details) {
+                  final screenWidth = MediaQuery.of(context).size.width;
+                  final tapX = details.globalPosition.dx;
+
+                  // Divide screen into thirds
+                  if (tapX < screenWidth / 3) {
+                    // Left third - previous row
+                    _decrementRow();
+                  } else if (tapX > 2 * screenWidth / 3) {
+                    // Right third - next row
+                    _incrementRow();
+                  }
+                  // Middle third - no action (allows row taps to work)
+                },
+                child: Card(
+                  margin: const EdgeInsets.all(8.0),
+                  elevation: 2,
+                  child: StitchChart(
+                    rows: _project.pattern.rows,
+                    currentRowIndex: _project.currentRowIndex,
+                    onRowTap: _updateRow,
+                  ),
                 ),
               ),
             ),
