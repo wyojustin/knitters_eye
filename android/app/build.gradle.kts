@@ -8,7 +8,6 @@ plugins {
 android {
     namespace = "com.knitterseyeapp.knitters_eye"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
