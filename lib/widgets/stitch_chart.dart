@@ -78,38 +78,32 @@ class _StitchChartState extends State<StitchChart> {
     // Reverse rows to build from bottom to top
     final reversedRows = widget.rows.reversed.toList();
 
-    // Wrap in horizontal scroll so all rows scroll together
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      controller: _horizontalScrollController,
-      child: IntrinsicWidth(
-        child: ListView.builder(
-          controller: _scrollController,
-          reverse: false,
-          itemCount: reversedRows.length,
-          itemBuilder: (context, index) {
-            // Calculate the actual row index in the original list
-            final actualIndex = widget.rows.length - 1 - index;
-            final row = reversedRows[index];
+    return ListView.builder(
+      controller: _scrollController,
+      reverse: false,
+      itemCount: reversedRows.length,
+      itemBuilder: (context, index) {
+        // Calculate the actual row index in the original list
+        final actualIndex = widget.rows.length - 1 - index;
+        final row = reversedRows[index];
 
-            final isCurrentRow = actualIndex == widget.currentRowIndex;
-            final isCompleted = actualIndex < widget.currentRowIndex;
-            final isFuture = actualIndex > widget.currentRowIndex;
+        final isCurrentRow = actualIndex == widget.currentRowIndex;
+        final isCompleted = actualIndex < widget.currentRowIndex;
+        final isFuture = actualIndex > widget.currentRowIndex;
 
-            return GestureDetector(
-              key: _rowKeys[actualIndex],
-              onTap: () => widget.onRowTap(actualIndex),
-              child: _StitchRow(
-                row: row,
-                isCurrentRow: isCurrentRow,
-                isCompleted: isCompleted,
-                isFuture: isFuture,
-                currentIsWS: currentIsWS,
-              ),
-            );
-          },
-        ),
-      ),
+        return GestureDetector(
+          key: _rowKeys[actualIndex],
+          onTap: () => widget.onRowTap(actualIndex),
+          child: _StitchRow(
+            row: row,
+            isCurrentRow: isCurrentRow,
+            isCompleted: isCompleted,
+            isFuture: isFuture,
+            currentIsWS: currentIsWS,
+            horizontalScrollController: _horizontalScrollController,
+          ),
+        );
+      },
     );
   }
 }
@@ -120,6 +114,7 @@ class _StitchRow extends StatelessWidget {
   final bool isCompleted;
   final bool isFuture;
   final bool currentIsWS;
+  final ScrollController horizontalScrollController;
 
   const _StitchRow({
     required this.row,
@@ -127,6 +122,7 @@ class _StitchRow extends StatelessWidget {
     required this.isCompleted,
     required this.isFuture,
     required this.currentIsWS,
+    required this.horizontalScrollController,
   });
 
   @override
@@ -152,9 +148,12 @@ class _StitchRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 0.5, horizontal: 8),
       child: Opacity(
         opacity: opacity,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          controller: horizontalScrollController,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
               // Row number - always normal
               SizedBox(
                 width: 32,
@@ -194,6 +193,7 @@ class _StitchRow extends StatelessWidget {
                 padding: EdgeInsets.zero,
               ),
             ],
+          ),
         ),
       ),
     );
